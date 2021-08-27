@@ -59,7 +59,7 @@ fn to_excel(p: &ADMET, name: &str) {
                 .write_string(y, 2, &format!("{} {}", m1, m2), None)
                 .unwrap();
             sheet
-                .write_string(y, 3, &format!("{} {}", v1.as_str(), v2), None)
+                .write_string(y, 3, &format!("{} {}", v1.replace("\"", ""), v2), None)
                 .unwrap();
 
             // info!(
