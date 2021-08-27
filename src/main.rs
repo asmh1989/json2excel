@@ -137,7 +137,7 @@ fn main() -> Result<()> {
     let p: ADMET = serde_json::from_str(&fix_str)?;
     to_excel(&p, &name);
 
-    info!("完成转换, 输出文件 = {}.json", name);
+    info!("完成转换, 输出文件 = {}.xlsx", name);
 
     Ok(())
 }
