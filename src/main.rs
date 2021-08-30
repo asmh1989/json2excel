@@ -28,7 +28,8 @@ fn to_excel(p: &ADMET, name: &str) {
 
     let format2 = workbook
         .add_format()
-        .set_bg_color(FormatColor::Gray)
+        .set_font_size(16.)
+        // .set_bold()
         .set_align(FormatAlignment::CenterAcross)
         .set_align(FormatAlignment::VerticalCenter);
 
@@ -39,6 +40,9 @@ fn to_excel(p: &ADMET, name: &str) {
         sheet
             .merge_range(0, 0, 0, 1, "SMILES", Some(&format2))
             .unwrap();
+
+        sheet.set_row(0, 30., None).unwrap();
+
         sheet
             .merge_range(
                 0,
