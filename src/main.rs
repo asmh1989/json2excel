@@ -44,8 +44,6 @@ fn to_excel(p: &ADMET, name: &str) {
 
         let mut c_y = 1;
         let mut category = "";
-        let mut num = 0;
-        let mut first = true;
         f.iter().for_each(|v| {
             let array = v.as_array().unwrap();
             let index = array.get(0).unwrap().as_f64().unwrap() + 1.;
@@ -63,38 +61,29 @@ fn to_excel(p: &ADMET, name: &str) {
                 .unwrap();
 
             // info!(
-            //     "index : {}, category : {}, c: {}, num: {}, c_y: {}, y: {}",
-            //     index, category, c, num, c_y, y
+            //     "index : {}, category : {},  c: {}, m1 = {}, c_y: {}, y: {}",
+            //     index, category, c, m1, c_y, y
             // );
 
+            sheet.write_string(y, 1, c, Some(&format)).unwrap();
             if c != category {
-                if !category.is_empty() {
-                    // 写入合并列
-                    if num > 0 {
-                        // info!("unit ... {:?}, {}", (c_y, y), category);
-                        sheet
-                            .merge_range(c_y, 1, y, 1, category, Some(&format))
-                            .unwrap();
-                    } else {
-                        // info!("wrirte 1 ... {:?}, {}", c_y, category);
-                        sheet.write_string(c_y, 1, category, Some(&format)).unwrap();
-                    }
-                    if first {
-                        c_y = y;
-                        first = false;
-                    } else {
-                        c_y = y + 1;
-                    }
+                if y - c_y > 1 {
+                    sheet
+                        .merge_range(c_y, 1, y - 1, 1, category, Some(&format))
+                        .unwrap();
                 }
-
-                num = 0;
                 category = c;
-            } else {
-                num += 1;
+                c_y = y
             }
 
             y += 1;
         });
+
+        if y - c_y > 1 {
+            sheet
+                .merge_range(c_y, 1, y - 1, 1, category, Some(&format))
+                .unwrap();
+        }
     });
 
     workbook.close().unwrap();
