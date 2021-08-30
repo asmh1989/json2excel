@@ -26,15 +26,36 @@ fn to_excel(p: &ADMET, name: &str) {
         .set_align(FormatAlignment::CenterAcross)
         .set_align(FormatAlignment::VerticalCenter);
 
+    let format2 = workbook
+        .add_format()
+        .set_bg_color(FormatColor::Gray)
+        .set_align(FormatAlignment::CenterAcross)
+        .set_align(FormatAlignment::VerticalCenter);
+
     let format1 = workbook.add_format().set_align(FormatAlignment::Center);
 
-    p.output.iter().for_each(|f| {
+    p.output.iter().enumerate().for_each(|(i, f)| {
         let mut sheet = workbook.add_worksheet(None).unwrap();
-        let mut y = 0;
-        sheet.write_string(0, 0, "序号", Some(&format1)).unwrap();
-        sheet.write_string(0, 1, "目标分类", Some(&format)).unwrap();
-        sheet.write_string(0, 2, "目标名字", None).unwrap();
-        sheet.write_string(0, 3, "值 (单位)", None).unwrap();
+        sheet
+            .merge_range(0, 0, 0, 1, "SMILES", Some(&format2))
+            .unwrap();
+        sheet
+            .merge_range(
+                0,
+                2,
+                0,
+                3,
+                p.input.get(i).unwrap().as_str().unwrap(),
+                Some(&format2),
+            )
+            .unwrap();
+
+        let first = 1;
+        let mut y = first;
+        sheet.write_string(y, 0, "序号", Some(&format1)).unwrap();
+        sheet.write_string(y, 1, "目标分类", Some(&format)).unwrap();
+        sheet.write_string(y, 2, "目标名字", None).unwrap();
+        sheet.write_string(y, 3, "值 (单位)", None).unwrap();
         sheet.set_column(0, 0, 6., None).unwrap();
         sheet.set_column(1, 1, 20., None).unwrap();
         sheet.set_column(2, 2, 60., None).unwrap();
