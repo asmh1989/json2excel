@@ -1,14 +1,16 @@
 #![allow(dead_code)]
+
 use log::info;
 use serde::{Deserialize, Serialize};
 use serde_json::{Result, Value};
 use structopt::StructOpt;
-use xlsxwriter::{FormatAlignment, FormatColor, Workbook};
+use xlsxwriter::{FormatAlignment, FormatColor, ImageOptions, Workbook};
 
 use crate::args::Opt;
 
 mod args;
 mod config;
+mod download;
 mod json;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -16,6 +18,8 @@ struct ADMET {
     input: Vec<Value>,
     output: Vec<Vec<Value>>,
 }
+
+const TMP_DIR: &str = ".tmp_smiles_2_img";
 
 fn to_excel(p: &ADMET, name: &str) {
     let workbook = Workbook::new(&format!("{}.xlsx", name));
@@ -35,23 +39,41 @@ fn to_excel(p: &ADMET, name: &str) {
 
     let format1 = workbook.add_format().set_align(FormatAlignment::Center);
 
+    let _ = std::fs::create_dir(TMP_DIR);
+
     p.output.iter().enumerate().for_each(|(i, f)| {
         let mut sheet = workbook.add_worksheet(None).unwrap();
         sheet
             .merge_range(0, 0, 0, 1, "SMILES", Some(&format2))
             .unwrap();
+        sheet.merge_range(1, 5, 16, 9, "", None).unwrap();
 
         sheet.set_row(0, 30., None).unwrap();
+        let smiles = p.input.get(i).unwrap().as_str().unwrap();
+
+        let img = format!("{}/{}", TMP_DIR, smiles);
+
+        let r = crate::download::fetch_url(smiles, img.clone());
+        if r.is_err() {
+            log::error!("smiles:{} 生成图片失败!", smiles);
+        } else {
+            sheet
+                .insert_image_opt(
+                    1,
+                    5,
+                    &img,
+                    &ImageOptions {
+                        x_offset: 14,
+                        y_offset: 2,
+                        x_scale: 1.0,
+                        y_scale: 1.0,
+                    },
+                )
+                .unwrap();
+        }
 
         sheet
-            .merge_range(
-                0,
-                2,
-                0,
-                3,
-                p.input.get(i).unwrap().as_str().unwrap(),
-                Some(&format2),
-            )
+            .merge_range(0, 2, 0, 3, smiles, Some(&format2))
             .unwrap();
 
         let first = 1;
@@ -112,6 +134,8 @@ fn to_excel(p: &ADMET, name: &str) {
     });
 
     workbook.close().unwrap();
+
+    let _ = std::fs::remove_dir_all(TMP_DIR);
 }
 
 pub fn file_exist(path: &str) -> bool {
@@ -130,7 +154,7 @@ fn main() -> Result<()> {
     }
     crate::config::init_config();
 
-    let path = opt.input;
+    let path = opt.input.map_or_else(|| "".to_string(), |f| f);
 
     if !file_exist(&path) {
         info!("{} 输入文件不存在!", path);

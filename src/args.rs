@@ -7,5 +7,5 @@ pub struct Opt {
     pub version: bool,
 
     #[structopt(short = "i", help = "输入json文件路径")]
-    pub input: String,
+    pub input: Option<String>,
 }
