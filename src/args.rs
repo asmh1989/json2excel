@@ -8,4 +8,7 @@ pub struct Opt {
 
     #[structopt(short = "i", help = "输入json文件路径")]
     pub input: Option<String>,
+
+    #[structopt(long = "id", help = "id文件列表")]
+    pub id: Option<String>,
 }

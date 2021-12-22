@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
+use json::D;
 use log::info;
 use serde::{Deserialize, Serialize};
 use serde_json::{Result, Value};
+use std::{collections::HashMap, path::Path};
 use structopt::StructOpt;
 use xlsxwriter::{FormatAlignment, FormatColor, ImageOptions, Workbook};
 
@@ -21,7 +23,7 @@ struct ADMET {
 
 const TMP_DIR: &str = ".tmp_smiles_2_img";
 
-fn to_excel(p: &ADMET, name: &str) {
+fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>) {
     let workbook = Workbook::new(&format!("{}.xlsx", name));
 
     let format = workbook
@@ -42,14 +44,20 @@ fn to_excel(p: &ADMET, name: &str) {
     let _ = std::fs::create_dir(TMP_DIR);
 
     p.output.iter().enumerate().for_each(|(i, f)| {
-        let mut sheet = workbook.add_worksheet(None).unwrap();
+        let smiles = p.input.get(i).unwrap().as_str().unwrap();
+
+        let name = if let Some(ee) = map.get(smiles) {
+            Some(ee.as_str())
+        } else {
+            None
+        };
+        let mut sheet = workbook.add_worksheet(name).unwrap();
         sheet
             .merge_range(0, 0, 0, 1, "SMILES", Some(&format2))
             .unwrap();
         sheet.merge_range(1, 5, 16, 9, "", None).unwrap();
 
         sheet.set_row(0, 30., None).unwrap();
-        let smiles = p.input.get(i).unwrap().as_str().unwrap();
 
         let img = format!("{}/{}", TMP_DIR, smiles);
 
@@ -142,6 +150,22 @@ pub fn file_exist(path: &str) -> bool {
     std::fs::metadata(path).is_ok()
 }
 
+fn read_csv<P: AsRef<Path>>(path: P, v: &mut HashMap<String, String>) {
+    // let file = File::open(path)?;
+    let mut rdr = csv::ReaderBuilder::new()
+        .delimiter(b',')
+        .has_headers(true)
+        .from_path(path)
+        .unwrap();
+    for result in rdr.deserialize() {
+        let ele: D = result.unwrap();
+
+        if !ele.smiles.is_empty() {
+            v.insert(ele.smiles.clone(), ele.id.clone());
+        }
+    }
+}
+
 fn main() -> Result<()> {
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -155,6 +179,14 @@ fn main() -> Result<()> {
     crate::config::init_config();
 
     let path = opt.input.map_or_else(|| "".to_string(), |f| f);
+
+    let id = opt.id.map_or_else(|| "".to_string(), |f| f);
+
+    let mut map: HashMap<String, String> = HashMap::new();
+
+    if !id.is_empty() {
+        read_csv(id, &mut map);
+    }
 
     if !file_exist(&path) {
         info!("{} 输入文件不存在!", path);
@@ -173,7 +205,7 @@ fn main() -> Result<()> {
 
     let fix_str = str.replace("NaN", "\"\"");
     let p: ADMET = serde_json::from_str(&fix_str)?;
-    to_excel(&p, &name);
+    to_excel(&p, &name, &mut map);
 
     info!("完成转换, 输出文件 = {}.xlsx", name);
 
