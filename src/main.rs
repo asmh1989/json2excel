@@ -56,7 +56,7 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>) {
         let name = if let Some(ee) = map.get(smiles) {
             ee.as_str()
         } else {
-            ""
+            smiles
         };
 
         let first = 0;
