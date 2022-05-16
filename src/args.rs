@@ -11,4 +11,7 @@ pub struct Opt {
 
     #[structopt(long = "id", help = "id文件列表")]
     pub id: Option<String>,
+
+    #[structopt(long = "csv", help = "输出csv文件格式")]
+    pub csv: bool,
 }
