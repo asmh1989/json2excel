@@ -120,7 +120,15 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>) {
 
         f.iter().for_each(|v| {
             let array = v.as_array().unwrap();
-            let v1 = array.get(4).unwrap().to_string();
+            let vv = array.get(4).unwrap().as_f64();
+
+            let mut v1 = array.get(4).unwrap().to_string();
+
+            if let Some(v2) = vv {
+                if v2 > 9999999.9f64 {
+                    v1 = "9999999".to_string();
+                }
+            }
 
             sheet
                 .write_string(y, r, &format!("{}", v1.replace("\"", "")), None)
