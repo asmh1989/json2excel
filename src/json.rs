@@ -7,3 +7,13 @@ pub struct D {
     #[serde(rename = "ID")]
     pub id: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActureHerg {
+    #[serde(rename = "smiles")]
+    pub smiles: String,
+    #[serde(rename = "Acute_Toxicity")]
+    pub acute_toxicity: bool,
+    #[serde(rename = "hERG")]
+    pub herg: bool,
+}

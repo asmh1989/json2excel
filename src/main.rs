@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
-use json::D;
+use json::{ActureHerg, D};
 use log::info;
 use serde::{Deserialize, Serialize};
-use serde_json::{Result, Value};
+use serde_json::{json, Result, Value};
 use std::{collections::HashMap, io::Write, path::Path};
 use structopt::StructOpt;
 use xlsxwriter::{FormatAlignment, FormatColor, Workbook};
@@ -23,7 +23,67 @@ struct ADMET {
 
 const TMP_DIR: &str = ".tmp_smiles_2_img";
 
-fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>) {
+fn is_need(id: f64, ah: &Vec<ActureHerg>) -> bool {
+    if !ah.is_empty() {
+        if id < 1.9f64 || id > 10.1f64 {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, index: usize) {
+    if ah.is_empty() {
+        return;
+    } else {
+        let ache = ah.get(index).unwrap();
+
+        ori.iter().for_each(|f| {
+            let mut array = f.as_array().unwrap().clone();
+            let id = array.get(0).unwrap().as_f64().unwrap();
+            if id < 1.9f64 || id > 10.1f64 {
+                if id > 32.1f64 && id < 33.1f64 {
+                    let mut aa: Vec<Value> = Vec::with_capacity(6);
+                    aa.push(json!(vv.len()));
+                    aa.push(array.get(1).unwrap().clone());
+                    aa.push(json!("Acurate toxicity"));
+                    aa.push(json!("（AIXB, 阙值：500mg/kg，大鼠）"));
+                    aa.push(if ache.acute_toxicity {
+                        json!("<500mg/kg")
+                    } else {
+                        json!(">500mg/kg")
+                    });
+                    aa.push(json!("mg/kg"));
+                    aa.push(json!(""));
+                    vv.push(json!(aa));
+                } else if id > 38.1f64 && id < 39.1f64 {
+                    let mut aa: Vec<Value> = Vec::with_capacity(6);
+                    aa.push(json!(vv.len()));
+                    aa.push(array.get(1).unwrap().clone());
+                    aa.push(json!("hERG"));
+                    aa.push(json!("（AIXB, 阙值：10μM）"));
+                    aa.push(if ache.herg {
+                        json!("<10μM")
+                    } else {
+                        json!(">10μM")
+                    });
+                    aa.push(json!("μM"));
+
+                    aa.push(json!(""));
+                    vv.push(json!(aa));
+                }
+
+                array[0] = json!(vv.len());
+                vv.push(json!(array));
+            }
+        });
+    }
+}
+
+fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<ActureHerg>) {
     let workbook = Workbook::new(&format!("{}.xlsx", name));
 
     let format = workbook
@@ -75,24 +135,35 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>) {
 
         y += 1;
 
+        let mut vvv: Vec<Value> = Vec::new();
+
+        filter_and_add(ah, f, &mut vvv, i);
+
+        let mut vv = f;
+        if !vvv.is_empty() {
+            vv = &vvv;
+        }
+
         let mut c_y = 1;
         let mut category = "";
         if first_one {
-            f.iter().for_each(|v| {
+            vv.iter().for_each(|v| {
                 let array = v.as_array().unwrap();
-                let index = array.get(0).unwrap().as_f64().unwrap() + 1.;
+
                 let c = array.get(1).unwrap().as_str().unwrap();
                 let m1 = array.get(2).unwrap().as_str().unwrap();
                 let m2 = array.get(3).unwrap().as_str().unwrap();
                 // let v1 = array.get(4).unwrap().to_string();
                 let v2 = array.get(5).unwrap().as_str().unwrap();
-                sheet.write_number(y, 0, index, Some(&format1)).unwrap();
+
+                sheet.write_number(y, 0, y as f64, Some(&format1)).unwrap();
                 sheet
                     .write_string(y, 2, &format!("{} {}", m1, m2), None)
                     .unwrap();
                 sheet.write_string(y, 3, &format!("{}", v2), None).unwrap();
 
                 sheet.write_string(y, 1, c, Some(&format)).unwrap();
+
                 if c != category {
                     if y - c_y > 1 {
                         sheet
@@ -118,7 +189,7 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>) {
         y = first + 1;
         // sheet.write_string(1, r, "值", None).unwrap();
 
-        f.iter().for_each(|v| {
+        vv.iter().for_each(|v| {
             let array = v.as_array().unwrap();
             let vv = array.get(4).unwrap().as_f64();
 
@@ -220,6 +291,22 @@ fn read_csv<P: AsRef<Path>>(path: P, v: &mut HashMap<String, String>) {
     }
 }
 
+fn read_csv2<P: AsRef<Path>>(path: P, v: &mut Vec<ActureHerg>) {
+    // let file = File::open(path)?;
+    let mut rdr = csv::ReaderBuilder::new()
+        .delimiter(b',')
+        .has_headers(true)
+        .from_path(path)
+        .unwrap();
+    for result in rdr.deserialize() {
+        let ele: ActureHerg = result.unwrap();
+
+        if !ele.smiles.is_empty() {
+            v.push(ele.clone());
+        }
+    }
+}
+
 fn main() -> Result<()> {
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
@@ -265,7 +352,19 @@ fn main() -> Result<()> {
         to_csv(&p, &name, &mut map);
         info!("完成转换, 输出文件 = {}.csv", name);
     } else {
-        to_excel(&p, &name, &mut map);
+        let file = opt.actue_herg_file.map_or_else(|| "".to_string(), |f| f);
+
+        let mut ah: Vec<ActureHerg> = Vec::new();
+        if file_exist(&file) {
+            read_csv2(&file, &mut ah);
+        }
+
+        if !file.is_empty() && ah.is_empty() {
+            info!("{:?},actue_herg_file 文件不存在, exit!! ", file);
+            return Ok(());
+        }
+
+        to_excel(&p, &name, &mut map, &ah);
 
         info!("完成转换, 输出文件 = {}.xlsx", name);
     }
