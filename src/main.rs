@@ -49,7 +49,7 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                     let mut aa: Vec<Value> = Vec::with_capacity(6);
                     aa.push(json!(vv.len()));
                     aa.push(array.get(1).unwrap().clone());
-                    aa.push(json!("Acurate toxicity"));
+                    aa.push(json!("Acute toxicity"));
                     aa.push(json!("（AIXB, 阙值：500mg/kg，大鼠）"));
                     aa.push(if ache.acute_toxicity {
                         json!("<500mg/kg")
