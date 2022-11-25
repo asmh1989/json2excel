@@ -10,7 +10,7 @@ pub struct D {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActureHerg {
-    #[serde(rename = "smiles")]
+    #[serde(rename = "smiles", alias = "SMILES")]
     pub smiles: String,
     #[serde(rename = "Acute_Toxicity")]
     pub acute_toxicity: bool,
