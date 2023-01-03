@@ -41,8 +41,8 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
     } else {
         let ache = ah.get(index).unwrap();
         let filter_vec = vec![
-            1, 11, 12, 13, 14, 15, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-            35, 36, 37, 38, 39,
+            0, 1, 11, 12, 13, 14, 15, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+            34, 35, 36, 37, 38, 39,
         ];
         ori.iter().for_each(|f| {
             let mut array = f.as_array().unwrap().clone();
@@ -153,7 +153,7 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
 
     let mut r = 4;
 
-    let filter_vec = vec![9, 10, 22, 23, 30];
+    let filter_vec = vec![10, 11, 23, 24, 31];
 
     p.output.iter().enumerate().for_each(|(i, f)| {
         let smiles = p.input.get(i).unwrap().as_str().unwrap();
