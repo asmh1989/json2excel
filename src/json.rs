@@ -16,4 +16,10 @@ pub struct ActureHerg {
     pub acute_toxicity: bool,
     #[serde(rename = "hERG")]
     pub herg: bool,
+    #[serde(rename = "fu")]
+    pub fu: u32,
+    #[serde(rename = "cl")]
+    pub cl: f64,
+    #[serde(rename = "vdss")]
+    pub vdss: f64,
 }

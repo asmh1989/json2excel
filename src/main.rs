@@ -40,12 +40,27 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
         return;
     } else {
         let ache = ah.get(index).unwrap();
-
+        let filter_vec = vec![
+            1, 11, 12, 13, 14, 15, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+            35, 36, 37, 38, 39,
+        ];
         ori.iter().for_each(|f| {
             let mut array = f.as_array().unwrap().clone();
             let id = array.get(0).unwrap().as_f64().unwrap();
-            if id < 1.9f64 || id > 10.1f64 {
+            let id2 = id as i32;
+            if filter_vec.contains(&id2) {
                 if id > 32.1f64 && id < 33.1f64 {
+                    let mut aa: Vec<Value> = Vec::with_capacity(6);
+                    aa.push(json!(vv.len()));
+                    aa.push(json!("排泄（E）"));
+                    aa.push(json!("人体的总体清除率"));
+                    aa.push(json!("Clearance"));
+                    aa.push(json!(ache.cl));
+                    aa.push(json!("mL/min/kg"));
+
+                    aa.push(json!(""));
+                    vv.push(json!(aa));
+
                     let mut aa: Vec<Value> = Vec::with_capacity(6);
                     aa.push(json!(vv.len()));
                     aa.push(array.get(1).unwrap().clone());
@@ -74,10 +89,37 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
 
                     aa.push(json!(""));
                     vv.push(json!(aa));
+                } else if id > 21.1f64 && id < 22.1f64 {
+                    let mut aa: Vec<Value> = Vec::with_capacity(6);
+                    aa.push(json!(vv.len()));
+                    aa.push(json!("分布（D）"));
+                    aa.push(json!("人体血浆中未结合药物率"));
+                    aa.push(json!("Fraction unbound in plasma"));
+                    aa.push(if ache.fu == 0 {
+                        json!("<1%")
+                    } else {
+                        json!(">1%")
+                    });
+                    aa.push(json!("%"));
+                    aa.push(json!(""));
+                    vv.push(json!(aa));
+
+                    let mut aa: Vec<Value> = Vec::with_capacity(6);
+                    aa.push(json!(vv.len()));
+                    aa.push(json!("分布（D）"));
+                    aa.push(json!("人体的稳态表观分布容积"));
+                    aa.push(json!("Volume of distribution at steady-state"));
+                    aa.push(json!(ache.vdss));
+                    aa.push(json!("L/kg"));
+
+                    aa.push(json!(""));
+                    vv.push(json!(aa));
                 }
 
-                array[0] = json!(vv.len());
-                vv.push(json!(array));
+                if id2 != 39 {
+                    array[0] = json!(vv.len());
+                    vv.push(json!(array));
+                }
             }
         });
     }
@@ -100,6 +142,7 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
         .set_align(FormatAlignment::CenterAcross)
         .set_align(FormatAlignment::VerticalCenter);
 
+    let format3 = workbook.add_format().set_bg_color(FormatColor::Yellow);
     let format1 = workbook.add_format().set_align(FormatAlignment::Center);
 
     let _ = std::fs::create_dir(TMP_DIR);
@@ -109,6 +152,8 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
     let mut first_one = true;
 
     let mut r = 4;
+
+    let filter_vec = vec![9, 10, 22, 23, 30];
 
     p.output.iter().enumerate().for_each(|(i, f)| {
         let smiles = p.input.get(i).unwrap().as_str().unwrap();
@@ -147,7 +192,7 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
         let mut c_y = 1;
         let mut category = "";
         if first_one {
-            vv.iter().for_each(|v| {
+            vv.iter().enumerate().for_each(|(index, v)| {
                 let array = v.as_array().unwrap();
 
                 let c = array.get(1).unwrap().as_str().unwrap();
@@ -157,9 +202,16 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
                 let v2 = array.get(5).unwrap().as_str().unwrap();
 
                 sheet.write_number(y, 0, y as f64, Some(&format1)).unwrap();
-                sheet
-                    .write_string(y, 2, &format!("{} {}", m1, m2), None)
-                    .unwrap();
+                if filter_vec.contains(&index) {
+                    //高亮
+                    sheet
+                        .write_string(y, 2, &format!("{} {}", m1, m2), Some(&format3))
+                        .unwrap();
+                } else {
+                    sheet
+                        .write_string(y, 2, &format!("{} {}", m1, m2), None)
+                        .unwrap();
+                }
                 sheet.write_string(y, 3, &format!("{}", v2), None).unwrap();
 
                 sheet.write_string(y, 1, c, Some(&format)).unwrap();
@@ -189,7 +241,7 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
         y = first + 1;
         // sheet.write_string(1, r, "值", None).unwrap();
 
-        vv.iter().for_each(|v| {
+        vv.iter().enumerate().for_each(|(index, v)| {
             let array = v.as_array().unwrap();
             let vv = array.get(4).unwrap().as_f64();
 
@@ -201,9 +253,17 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
                 }
             }
 
-            sheet
-                .write_string(y, r, &format!("{}", v1.replace("\"", "")), None)
-                .unwrap();
+            if filter_vec.contains(&index) && v1.contains("<") {
+                //高亮
+                sheet
+                    .write_string(y, r, &format!("{}", v1.replace("\"", "")), Some(&format3))
+                    .unwrap();
+            } else {
+                sheet
+                    .write_string(y, r, &format!("{}", v1.replace("\"", "")), None)
+                    .unwrap();
+            }
+
             y += 1;
         });
 
