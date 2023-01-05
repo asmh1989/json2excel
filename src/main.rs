@@ -35,6 +35,26 @@ fn is_need(id: f64, ah: &Vec<ActureHerg>) -> bool {
     return true;
 }
 
+fn get_unit(index: usize, str1: &str, str2: &str, str3: &str, str4: &str, val: Value) -> Value {
+    let mut aa: Vec<Value> = Vec::with_capacity(6);
+    aa.push(json!(index));
+    aa.push(json!(str1));
+    aa.push(json!(str2));
+    aa.push(json!(str3));
+    aa.push(val);
+    aa.push(json!(str4));
+
+    aa.push(json!(""));
+    return json!(aa);
+}
+
+fn to_reject(v: u32) -> String {
+    if v == 1 {
+        "Reject".to_string()
+    } else {
+        "Accept".to_string()
+    }
+}
 fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, index: usize) {
     if ah.is_empty() {
         return;
@@ -54,7 +74,7 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                     aa.push(json!(vv.len()));
                     aa.push(json!("排泄（E）"));
                     aa.push(json!("人体的总体清除率"));
-                    aa.push(json!("Clearance"));
+                    aa.push(json!("Clearance, Cl (AIXB,human)"));
                     aa.push(json!(ache.cl));
                     aa.push(json!("mL/min/kg"));
 
@@ -93,8 +113,10 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                     let mut aa: Vec<Value> = Vec::with_capacity(6);
                     aa.push(json!(vv.len()));
                     aa.push(json!("分布（D）"));
-                    aa.push(json!("人体血浆中未结合药物率"));
-                    aa.push(json!("Fraction unbound in plasma"));
+                    aa.push(json!("血浆蛋白未结合率"));
+                    aa.push(json!(
+                        "Fraction unbound in plasma,Fu (AIXB,human,阈值：0.01)"
+                    ));
                     aa.push(if ache.fu == 0 {
                         json!("<1%")
                     } else {
@@ -107,8 +129,10 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                     let mut aa: Vec<Value> = Vec::with_capacity(6);
                     aa.push(json!(vv.len()));
                     aa.push(json!("分布（D）"));
-                    aa.push(json!("人体的稳态表观分布容积"));
-                    aa.push(json!("Volume of distribution at steady-state"));
+                    aa.push(json!("稳态表观分布容积"));
+                    aa.push(json!(
+                        "Volume of distribution at steady-state,Vdss (AIXB,human)"
+                    ));
                     aa.push(json!(ache.vdss));
                     aa.push(json!("L/kg"));
 
@@ -122,6 +146,71 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                 }
             }
         });
+
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "Skin_Sensitization",
+            "(AIXB)",
+            "",
+            json!(to_reject(ache.skin_sens)),
+        ));
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "Skin_Sensitization_matchedname",
+            "(AIXB)",
+            "",
+            json!(ache.skin_sens_matched),
+        ));
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "LD50_Oral",
+            "(AIXB)",
+            "",
+            json!(to_reject(ache.ld50_oral)),
+        ));
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "LD50_Oral_matchedname",
+            "(AIXB)",
+            "",
+            json!(ache.ld50_oral_matched),
+        ));
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "Genotoxic_Carcinogenicity_Mutagenicity",
+            "(AIXB)",
+            "",
+            json!(to_reject(ache.genotoxic)),
+        ));
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "Genotoxic_Carcinogenicity_Mutagenicity_matchedname",
+            "(AIXB)",
+            "",
+            json!(ache.genotoxic_matched),
+        ));
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "NonGenotoxic_Carcinogenicity",
+            "(AIXB)",
+            "",
+            json!(to_reject(ache.non_genotoxic)),
+        ));
+        vv.push(get_unit(
+            vv.len(),
+            "Toxicophore",
+            "NonGenotoxic_Carcinogenicity_matchedname",
+            "(AIXB)",
+            "",
+            json!(ache.non_genotoxic_matched),
+        ));
     }
 }
 
@@ -142,7 +231,11 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
         .set_align(FormatAlignment::CenterAcross)
         .set_align(FormatAlignment::VerticalCenter);
 
-    let format3 = workbook.add_format().set_bg_color(FormatColor::Yellow);
+    let format3 = workbook
+        .add_format()
+        .set_bg_color(FormatColor::Custom(0x8DB4E2));
+
+    let format4 = workbook.add_format().set_bg_color(FormatColor::Yellow);
     let format1 = workbook.add_format().set_align(FormatAlignment::Center);
 
     let _ = std::fs::create_dir(TMP_DIR);
@@ -153,7 +246,7 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
 
     let mut r = 4;
 
-    let filter_vec = vec![10, 11, 23, 24, 31];
+    let mut filter_vec = Vec::new();
 
     p.output.iter().enumerate().for_each(|(i, f)| {
         let smiles = p.input.get(i).unwrap().as_str().unwrap();
@@ -202,7 +295,8 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
                 let v2 = array.get(5).unwrap().as_str().unwrap();
 
                 sheet.write_number(y, 0, y as f64, Some(&format1)).unwrap();
-                if filter_vec.contains(&index) {
+                if m2.contains("AIXB") {
+                    filter_vec.push(index);
                     //高亮
                     sheet
                         .write_string(y, 2, &format!("{} {}", m1, m2), Some(&format3))
@@ -253,10 +347,10 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
                 }
             }
 
-            if filter_vec.contains(&index) && v1.contains("<") {
+            if filter_vec.contains(&index) && (v1.contains("<") || v1.contains("Reject")) {
                 //高亮
                 sheet
-                    .write_string(y, r, &format!("{}", v1.replace("\"", "")), Some(&format3))
+                    .write_string(y, r, &format!("{}", v1.replace("\"", "")), Some(&format4))
                     .unwrap();
             } else {
                 sheet

@@ -22,4 +22,27 @@ pub struct ActureHerg {
     pub cl: f64,
     #[serde(rename = "vdss")]
     pub vdss: f64,
+    #[serde(rename = "Skin_Sens")]
+    pub skin_sens: u32,
+
+    #[serde(rename = "Skin_Sens_matched")]
+    pub skin_sens_matched: String,
+
+    #[serde(rename = "LD50_Oral")]
+    pub ld50_oral: u32,
+
+    #[serde(rename = "LD50_Oral_matched")]
+    pub ld50_oral_matched: String,
+
+    #[serde(rename = "Genotoxic")]
+    pub genotoxic: u32,
+
+    #[serde(rename = "Genotoxic_matched")]
+    pub genotoxic_matched: String,
+
+    #[serde(rename = "NonGenotoxic")]
+    pub non_genotoxic: u32,
+
+    #[serde(rename = "NonGenotoxic_matched")]
+    pub non_genotoxic_matched: String,
 }
