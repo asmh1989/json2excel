@@ -45,4 +45,10 @@ pub struct ActureHerg {
 
     #[serde(rename = "NonGenotoxic_matched")]
     pub non_genotoxic_matched: String,
+
+    #[serde(rename = "clint_prediction_regression")]
+    pub clint_prediction_regression: f64,
+
+    #[serde(rename = "clint_prediction_classification")]
+    pub clint_prediction_classification: usize,
 }
