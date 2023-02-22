@@ -82,35 +82,39 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                     vv.push(json!(aa));
 
                     // clint_prediction_classification
-                    let mut aa: Vec<Value> = Vec::with_capacity(6);
-                    aa.push(json!(vv.len()));
-                    aa.push(json!("排泄（E）"));
-                    aa.push(json!("人体内在清除率"));
-                    aa.push(json!("Intrinsic Clearance, Clint (AIXB human, 阈值：140 mL/min/g)"));
-                    
-                    if ache.clint_prediction_classification == 0 {
-                        aa.push(json!("<140"));
-                    } else {
-                        aa.push(json!(">140"));
+                    if ache.clint_prediction_classification.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("排泄（E）"));
+                        aa.push(json!("人体内在清除率"));
+                        aa.push(json!(
+                            "Intrinsic Clearance, Clint (AIXB human, 阈值：140 mL/min/g)"
+                        ));
 
+                        if ache.clint_prediction_classification.unwrap() == 0 {
+                            aa.push(json!("<140"));
+                        } else {
+                            aa.push(json!(">140"));
+                        }
+
+                        aa.push(json!("概率"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
                     }
-
-                    aa.push(json!("概率"));
-
-                    aa.push(json!(""));
-                    vv.push(json!(aa));
-
                     // clint_prediction_regression
-                    let mut aa: Vec<Value> = Vec::with_capacity(6);
-                    aa.push(json!(vv.len()));
-                    aa.push(json!("排泄（E）"));
-                    aa.push(json!("人体内在清除率"));
-                    aa.push(json!("Intrinsic Clearance, Clint (AIXB human)"));
-                    aa.push(json!(ache.clint_prediction_regression));
-                    aa.push(json!("mL/min/g"));
+                    if ache.clint_prediction_regression.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("排泄（E）"));
+                        aa.push(json!("人体内在清除率"));
+                        aa.push(json!("Intrinsic Clearance, Clint (AIXB human)"));
+                        aa.push(json!(ache.clint_prediction_regression.unwrap()));
+                        aa.push(json!("mL/min/g"));
 
-                    aa.push(json!(""));
-                    vv.push(json!(aa));
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
 
                     let mut aa: Vec<Value> = Vec::with_capacity(6);
                     aa.push(json!(vv.len()));
@@ -382,12 +386,12 @@ fn to_excel(p: &ADMET, name: &str, map: &mut HashMap<String, String>, ah: &Vec<A
                 //高亮
                 if v1.contains("<140") {
                     sheet
-                    .write_string(y, r, &format!("{}", v1.replace("\"", "")), None)
-                    .unwrap();
+                        .write_string(y, r, &format!("{}", v1.replace("\"", "")), None)
+                        .unwrap();
                 } else {
-                sheet
-                    .write_string(y, r, &format!("{}", v1.replace("\"", "")), Some(&format4))
-                    .unwrap();
+                    sheet
+                        .write_string(y, r, &format!("{}", v1.replace("\"", "")), Some(&format4))
+                        .unwrap();
                 }
             } else {
                 sheet

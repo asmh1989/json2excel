@@ -47,8 +47,8 @@ pub struct ActureHerg {
     pub non_genotoxic_matched: String,
 
     #[serde(rename = "clint_prediction_regression")]
-    pub clint_prediction_regression: f64,
+    pub clint_prediction_regression: Option<f64>,
 
     #[serde(rename = "clint_prediction_classification")]
-    pub clint_prediction_classification: usize,
+    pub clint_prediction_classification: Option<usize>,
 }
