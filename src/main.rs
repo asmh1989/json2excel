@@ -144,6 +144,25 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
 
                     aa.push(json!(""));
                     vv.push(json!(aa));
+
+                    if ache.herg_finetune.is_some() {
+                        let f = ache.herg_finetune.unwrap();
+
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(array.get(1).unwrap().clone());
+                        aa.push(json!("hERG finetune"));
+                        aa.push(json!("（AIXB, 阙值：10μM）"));
+                        aa.push(if f > 0.5f64 {
+                            json!("<10μM")
+                        } else {
+                            json!(">10μM")
+                        });
+                        aa.push(json!("μM"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
                 } else if id > 21.1f64 && id < 22.1f64 {
                     let mut aa: Vec<Value> = Vec::with_capacity(6);
                     aa.push(json!(vv.len()));
