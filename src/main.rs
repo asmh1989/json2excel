@@ -69,6 +69,46 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
             let id = array.get(0).unwrap().as_f64().unwrap();
             let id2 = id as i32;
             if filter_vec.contains(&id2) {
+                if id > 14.1f64 && id < 15.1f64 {
+                    if ache.pred_class_solub.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("理化性质"));
+                        aa.push(json!("水溶性"));
+                        aa.push(json!("Solubility，S（AIXB，阈值：10μg/ml）"));
+
+                        if ache.pred_class_solub.unwrap() == 0 {
+                            aa.push(json!("<10"));
+                        } else {
+                            aa.push(json!(">10"));
+                        }
+
+                        aa.push(json!("概率"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+
+                    if ache.pred_class_permeab.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!("膜渗透性"));
+                        aa.push(json!("Permeability，Papp （AIXB，阈值：1E-6cm/s）"));
+
+                        if ache.pred_class_permeab.unwrap() == 0 {
+                            aa.push(json!("<1E-6"));
+                        } else {
+                            aa.push(json!(">1E-6"));
+                        }
+
+                        aa.push(json!("概率"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+                }
+
                 if id > 32.1f64 && id < 33.1f64 {
                     let mut aa: Vec<Value> = Vec::with_capacity(6);
                     aa.push(json!(vv.len()));

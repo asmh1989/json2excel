@@ -53,4 +53,10 @@ pub struct ActureHerg {
 
     #[serde(rename = "clint_prediction_classification")]
     pub clint_prediction_classification: Option<usize>,
+
+    #[serde(rename = "pred_class_permeab")]
+    pub pred_class_permeab: Option<usize>,
+
+    #[serde(rename = "pred_class_solub")]
+    pub pred_class_solub: Option<usize>,
 }
