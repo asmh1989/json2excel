@@ -89,6 +89,22 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                         vv.push(json!(aa));
                     }
 
+                    if ache.log_s.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("理化性质"));
+                        aa.push(json!("水溶性"));
+                        aa.push(json!("Solubility，S（AIXB）"));
+
+                        let f = ache.log_s.unwrap();
+                        let base = 10f64.powf(f);
+                        aa.push(json!(format!("{:.2}", base)));
+                        aa.push(json!("μg/ml"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+
                     if ache.pred_class_permeab.is_some() {
                         let mut aa: Vec<Value> = Vec::with_capacity(6);
                         aa.push(json!(vv.len()));
@@ -103,6 +119,23 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                         }
 
                         aa.push(json!("概率"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+
+                    if ache.log_p.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!("膜渗透性"));
+                        aa.push(json!("Permeability，Papp （AIXB）"));
+
+                        let f = ache.log_p.unwrap();
+                        let base = 10f64.powf(f) * 10f64.powi(6);
+                        aa.push(json!(format!("{:.2}", base)));
+
+                        aa.push(json!("cm/s"));
 
                         aa.push(json!(""));
                         vv.push(json!(aa));

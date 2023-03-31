@@ -59,4 +59,10 @@ pub struct ActureHerg {
 
     #[serde(rename = "pred_class_solub")]
     pub pred_class_solub: Option<usize>,
+
+    #[serde(rename = "logS")]
+    pub log_s: Option<f64>,
+
+    #[serde(rename = "LogP")]
+    pub log_p: Option<f64>,
 }
