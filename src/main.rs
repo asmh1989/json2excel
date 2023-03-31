@@ -135,7 +135,7 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                         let base = 10f64.powf(f) * 10f64.powi(6);
                         aa.push(json!(format!("{:.2}", base)));
 
-                        aa.push(json!("cm/s"));
+                        aa.push(json!("1E-6 cm/s"));
 
                         aa.push(json!(""));
                         vv.push(json!(aa));
