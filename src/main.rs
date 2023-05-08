@@ -105,6 +105,25 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                         vv.push(json!(aa));
                     }
 
+                    if ache.pred_peff.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!("膜渗透性"));
+                        aa.push(json!("PAMPA Peff （AIXB, 阈值：2E-6cm/s）"));
+
+                        if ache.pred_peff.unwrap() == 0 {
+                            aa.push(json!("<2E-6"));
+                        } else {
+                            aa.push(json!(">2E-6"));
+                        }
+
+                        aa.push(json!("概率"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+
                     if ache.pred_class_permeab.is_some() {
                         let mut aa: Vec<Value> = Vec::with_capacity(6);
                         aa.push(json!(vv.len()));
