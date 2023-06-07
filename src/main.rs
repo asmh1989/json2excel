@@ -69,6 +69,23 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
             let id = array.get(0).unwrap().as_f64().unwrap();
             let id2 = id as i32;
             if filter_vec.contains(&id2) {
+                if id > 12.1f64 && id < 13.1f64 {
+                    if ache.chemaxon_logd.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("理化性质"));
+                        aa.push(json!("LogD7.4"));
+                        aa.push(json!("（ChemAxon AIXB）"));
+
+                        let f = ache.log_s.unwrap();
+                        // let base = 10f64.powf(f);
+                        aa.push(json!(format!("{:.2}", f)));
+                        aa.push(json!("log(mol/mol)"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+                }
                 if id > 14.1f64 && id < 15.1f64 {
                     if ache.pred_class_solub.is_some() {
                         let mut aa: Vec<Value> = Vec::with_capacity(6);

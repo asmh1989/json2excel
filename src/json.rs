@@ -68,4 +68,6 @@ pub struct ActureHerg {
 
     #[serde(rename = "LogP")]
     pub log_p: Option<f64>,
+    #[serde(rename = "ChemAxon_logD")]
+    pub chemaxon_logd: Option<f64>,
 }
