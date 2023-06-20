@@ -57,6 +57,9 @@ pub struct ActureHerg {
     #[serde(rename = "pred_class_permeab")]
     pub pred_class_permeab: Option<usize>,
 
+    #[serde(rename = "pred_class_permeability")]
+    pub pred_class_permeability: Option<usize>,
+
     #[serde(rename = "pred_class_solub")]
     pub pred_class_solub: Option<usize>,
 
