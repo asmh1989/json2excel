@@ -244,35 +244,38 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                         vv.push(json!(aa));
                     }
 
-                    let mut aa: Vec<Value> = Vec::with_capacity(6);
-                    aa.push(json!(vv.len()));
-                    aa.push(array.get(1).unwrap().clone());
-                    aa.push(json!("Acute toxicity"));
-                    aa.push(json!("（AIXB, 阙值：500mg/kg，大鼠）"));
-                    aa.push(if ache.acute_toxicity {
-                        json!("<500mg/kg")
-                    } else {
-                        json!(">500mg/kg")
-                    });
-                    aa.push(json!("mg/kg"));
-                    aa.push(json!(""));
-                    vv.push(json!(aa));
+                    if ache.acute_toxicity.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(array.get(1).unwrap().clone());
+                        aa.push(json!("Acute toxicity"));
+                        aa.push(json!("（AIXB, 阙值：500mg/kg，大鼠）"));
+                        aa.push(if ache.acute_toxicity.unwrap() {
+                            json!("<500mg/kg")
+                        } else {
+                            json!(">500mg/kg")
+                        });
+                        aa.push(json!("mg/kg"));
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
                 } else if id > 38.1f64 && id < 39.1f64 {
-                    let mut aa: Vec<Value> = Vec::with_capacity(6);
-                    aa.push(json!(vv.len()));
-                    aa.push(array.get(1).unwrap().clone());
-                    aa.push(json!("hERG"));
-                    aa.push(json!("（AIXB, 阙值：10μM）"));
-                    aa.push(if ache.herg {
-                        json!("<10μM")
-                    } else {
-                        json!(">10μM")
-                    });
-                    aa.push(json!("μM"));
+                    if ache.herg.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(array.get(1).unwrap().clone());
+                        aa.push(json!("hERG"));
+                        aa.push(json!("（AIXB, 阙值：10μM）"));
+                        aa.push(if ache.herg.unwrap() {
+                            json!("<10μM")
+                        } else {
+                            json!(">10μM")
+                        });
+                        aa.push(json!("μM"));
 
-                    aa.push(json!(""));
-                    vv.push(json!(aa));
-
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
                     if ache.herg_finetune.is_some() {
                         let f = ache.herg_finetune.unwrap();
 

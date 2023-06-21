@@ -13,9 +13,9 @@ pub struct ActureHerg {
     #[serde(rename = "smiles", alias = "SMILES")]
     pub smiles: String,
     #[serde(rename = "Acute_Toxicity")]
-    pub acute_toxicity: bool,
+    pub acute_toxicity: Option<bool>,
     #[serde(rename = "hERG")]
-    pub herg: bool,
+    pub herg: Option<bool>,
     #[serde(rename = "hERG_Finetune")]
     pub herg_finetune: Option<f64>,
     #[serde(rename = "fu")]
