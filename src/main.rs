@@ -211,6 +211,70 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                         aa.push(json!(""));
                         vv.push(json!(aa));
                     }
+
+                    if ache.psa_tpsa.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!(""));
+                        aa.push(json!("TPSA （AIXB）"));
+
+                        let f = ache.psa_tpsa.unwrap();
+                        aa.push(json!(f));
+
+                        aa.push(json!("Å^2"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+
+                    if ache.psa_sapsain_chcl3.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!(""));
+                        aa.push(json!("SAPSAinCHCl3 （AIXB）"));
+
+                        let f = ache.psa_sapsain_chcl3.unwrap();
+                        aa.push(json!(f));
+
+                        aa.push(json!("Å^2"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+
+                    if ache.psa_p_kas.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!(""));
+                        aa.push(json!("pKas （AIXB）"));
+
+                        let f = ache.psa_p_kas.clone().unwrap();
+                        aa.push(json!(&f));
+
+                        aa.push(json!("log(mol/mol)"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
+
+                    if ache.psa_delta_gc.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!(""));
+                        aa.push(json!("DeltaGc/w （AIXB）"));
+
+                        let f = ache.psa_delta_gc.unwrap();
+                        aa.push(json!(f));
+
+                        aa.push(json!("kcal/mol"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
                 }
 
                 if id > 32.1f64 && id < 33.1f64 {

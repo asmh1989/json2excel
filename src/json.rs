@@ -76,4 +76,13 @@ pub struct ActureHerg {
 
     #[serde(rename = "permeability_reg")]
     pub permeability_reg: Option<String>,
+
+    #[serde(rename = "3DPSA_TPSA")]
+    pub psa_tpsa: Option<f64>,
+    #[serde(rename = "3DPSA_SAPSAinCHCl3")]
+    pub psa_sapsain_chcl3: Option<f64>,
+    #[serde(rename = "3DPSA_DeltaGc")]
+    pub psa_delta_gc: Option<f64>,
+    #[serde(rename = "3DPSA_pKas")]
+    pub psa_p_kas: Option<String>,
 }
