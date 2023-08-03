@@ -195,6 +195,22 @@ fn filter_and_add(ah: &Vec<ActureHerg>, ori: &Vec<Value>, vv: &mut Vec<Value>, i
                         aa.push(json!(""));
                         vv.push(json!(aa));
                     }
+
+                    if ache.permeability_reg.is_some() {
+                        let mut aa: Vec<Value> = Vec::with_capacity(6);
+                        aa.push(json!(vv.len()));
+                        aa.push(json!("吸收（A）"));
+                        aa.push(json!("膜渗透性"));
+                        aa.push(json!("Permeability回归值, Papp （AIXB）"));
+
+                        let f = ache.permeability_reg.clone().unwrap();
+                        aa.push(json!(&f));
+
+                        aa.push(json!("cm/s"));
+
+                        aa.push(json!(""));
+                        vv.push(json!(aa));
+                    }
                 }
 
                 if id > 32.1f64 && id < 33.1f64 {
